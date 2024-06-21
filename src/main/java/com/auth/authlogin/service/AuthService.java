@@ -3,6 +3,7 @@ package com.auth.authlogin.service;
 import com.auth.authlogin.Exceptions.PasswordTooShortException;
 import com.auth.authlogin.Exceptions.UserAlreadyExistsException;
 import com.auth.authlogin.model.Entity.User;
+import com.auth.authlogin.model.Role;
 import com.auth.authlogin.model.payload.login.LoginRequest;
 import com.auth.authlogin.model.payload.register.RegisterRequest;
 import com.auth.authlogin.repositories.UserRepository;
