@@ -5,6 +5,7 @@ import com.auth.authlogin.Exceptions.UserAlreadyExistsException;
 import com.auth.authlogin.config.JwtService;
 import com.auth.authlogin.model.payload.Message.MessageResponse;
 import com.auth.authlogin.model.payload.login.LoginRequest;
+import com.auth.authlogin.model.payload.login.LoginResponse;
 import com.auth.authlogin.model.payload.register.RegisterRequest;
 import com.auth.authlogin.model.payload.register.RegisterResponse;
 import com.auth.authlogin.repositories.UserRepository;
@@ -15,13 +16,16 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/v1/auth")
-public class UserController {
+public class AuthController {
 
     @Autowired
     AuthService authService;
@@ -32,13 +36,16 @@ public class UserController {
     @Autowired
     JwtService jwtService;
 
+    @Autowired
+    AuthenticationManager authenticationManager;
+
     @PostMapping("/register")
     //@PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> register(
            @Valid @RequestBody RegisterRequest registerRequest, BindingResult bindingResult
     ){
         if(bindingResult.hasErrors()){
-            return ResponseEntity.badRequest().body(bindingResult.getFieldErrors().getFirst().getDefaultMessage());
+            return ResponseEntity.badRequest().body(bindingResult.getFieldErrors().getFirst());
         }
         try{
             authService.signup(registerRequest);
@@ -62,20 +69,12 @@ public class UserController {
     public ResponseEntity<?> login(
             @RequestBody LoginRequest loginRequest
     ) {
-//        try {
-//            User authenticatedUser = authService.login(loginRequest);
-//            String jwtToken = jwtService.generateToken(authenticatedUser);
-//            LoginRespone response = LoginRespone.builder()
-//                    .token(jwtToken)
-//                    .expiresIn(jwtService.getExpirationTime())
-//                    .build();
-//
-//            return new ResponseEntity<>(response,HttpStatus.OK);
-//
-//        } catch (BadCredentialsException | UsernameNotFoundException e ){
-//            return new ResponseEntity<>(e.getMessage(),HttpStatus.NOT_FOUND);
-//        }
-        return null;
+        try {
+            LoginResponse response = authService.login(loginRequest);
+            return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, response.getToken().toString()).body(response);
+        } catch (BadCredentialsException | UsernameNotFoundException e ){
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.NOT_FOUND);
+        }
     }
 
     @PostMapping("/signout")

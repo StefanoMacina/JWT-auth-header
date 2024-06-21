@@ -27,7 +27,7 @@ public class JwtService {
     @Value("${security.jwt.expiration-time}")
     private long EXPIRATION;
 
-    @Value("${security.jwt.jwtCookieName")
+    @Value("${security.jwt.jwtCookieName}")
     private String jwtCookie;
 
     public String getJwtFromCookies(HttpServletRequest request) {
@@ -41,7 +41,7 @@ public class JwtService {
 
     public ResponseCookie generateJwtCookie(UserDetails userPrincipal) {
         String jwt = generateTokenFromUsername(userPrincipal.getUsername());
-        return ResponseCookie.from(jwtCookie, jwt).path("/api").maxAge(24 * 60 * 60).httpOnly(true).build();
+        return ResponseCookie.from(jwtCookie,jwt).path("/api").maxAge(EXPIRATION).httpOnly(true).build();
     }
 
     public ResponseCookie getCleanJwtCookie() {

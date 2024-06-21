@@ -2,15 +2,21 @@ package com.auth.authlogin.service;
 
 import com.auth.authlogin.Exceptions.PasswordTooShortException;
 import com.auth.authlogin.Exceptions.UserAlreadyExistsException;
+import com.auth.authlogin.config.JwtService;
 import com.auth.authlogin.model.Entity.User;
-import com.auth.authlogin.model.Role;
 import com.auth.authlogin.model.payload.login.LoginRequest;
+import com.auth.authlogin.model.payload.login.LoginResponse;
+import com.auth.authlogin.model.payload.login.UserDto;
 import com.auth.authlogin.model.payload.register.RegisterRequest;
 import com.auth.authlogin.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,6 +32,9 @@ public class AuthService {
 
     @Autowired
     AuthenticationManager authenticationManager;
+
+    @Autowired
+    JwtService jwtService;
 
     public void signup(RegisterRequest registerRequest) throws UserAlreadyExistsException {
 
@@ -54,7 +63,8 @@ public class AuthService {
 
     }
 
-    public User login(LoginRequest loginRequest){
+    public LoginResponse login(LoginRequest loginRequest){
+
         String username = loginRequest.getUsername();
         String password = loginRequest.getPassword();
 
@@ -66,12 +76,24 @@ public class AuthService {
             throw new BadCredentialsException("incorrect password for user %s".formatted(username));
         }
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        username,
-                        password
-                )
+        UserDto userDto = UserDto.builder()
+                .firstname(user.getFirstname())
+                .lastname(user.getLastname())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .build();
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(username,password)
         );
-       return user;
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        ResponseCookie jwt = jwtService.generateJwtCookie(userDetails);
+
+       return LoginResponse.builder()
+               .token(jwt)
+               .userDto(userDto)
+               .build();
     }
 }

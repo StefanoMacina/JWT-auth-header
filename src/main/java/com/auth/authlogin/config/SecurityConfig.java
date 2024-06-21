@@ -31,7 +31,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests((auth) -> auth.requestMatchers("/api/v1/auth/**")
                 .permitAll()
                 .anyRequest()
-                .permitAll());
+                .authenticated());
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.authenticationProvider(authenticationProvider);
         http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
