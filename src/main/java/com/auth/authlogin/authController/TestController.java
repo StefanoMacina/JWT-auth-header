@@ -10,10 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @RestController
@@ -36,8 +33,6 @@ public class TestController {
                         .role(user.getRole())
                         .build())
                 .collect(Collectors.toList());
-
-
 
         return new ResponseEntity<>(users,HttpStatus.OK);
     }

@@ -63,6 +63,8 @@ public class AuthController {
             return new ResponseEntity<>(e.getMessage(),HttpStatus.CONFLICT);
         } catch (PasswordTooShortException e){
             return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (RuntimeException e){
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.NOT_ACCEPTABLE);
         }
     }
 

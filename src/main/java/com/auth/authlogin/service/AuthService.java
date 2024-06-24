@@ -21,6 +21,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
 public class AuthService {
 
@@ -59,6 +61,10 @@ public class AuthService {
             throw new PasswordTooShortException("password is too short");
         }
 
+        if(!Objects.equals(registerRequest.getRole(), "ROLE_ADMIN") || !Objects.equals(registerRequest.getRole(), "ROLE_OPERATOR")){
+            throw new RuntimeException("user role %s is not valid".formatted(registerRequest.getRole().toString()));
+        }
+
         userRepository.save(user);
 
     }
@@ -79,6 +85,7 @@ public class AuthService {
         UserDto userDto = UserDto.builder()
                 .firstname(user.getFirstname())
                 .lastname(user.getLastname())
+                .username(user.getUsername())
                 .email(user.getEmail())
                 .role(user.getRole())
                 .build();
